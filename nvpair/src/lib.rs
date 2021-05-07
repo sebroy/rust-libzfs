@@ -532,7 +532,7 @@ impl NvListRef {
                 code.as_raw(),
                 0,
             );
-            vec.set_len(cap as usize);
+            vec.set_len(size);
             v
         };
         if v != 0 {
