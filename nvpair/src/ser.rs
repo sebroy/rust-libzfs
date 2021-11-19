@@ -67,7 +67,12 @@ impl NvEncode for NvDataOwned {
             NvDataOwned::Uint32Array(v) => v.insert_into(name, nv),
             NvDataOwned::Int64Array(v) => v.insert_into(name, nv),
             NvDataOwned::Uint64Array(v) => v.insert_into(name, nv),
-            NvDataOwned::NvListArray(_v) => todo!(),
+            NvDataOwned::NvListArray(v) => v
+                .iter()
+                .map(|nv| nv.as_ref())
+                .collect::<Vec<_>>()
+                .as_slice()
+                .insert_into(name, nv),
         }
     }
 }
@@ -95,7 +100,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type Error = Error;
 
     type SerializeSeq = SeqSerializer<'a>;
-    type SerializeTuple = Self::SerializeSeq;
+    type SerializeTuple = TupleSerializer<'a>;
     type SerializeTupleStruct = Self::SerializeSeq;
     type SerializeTupleVariant = Self;
     type SerializeMap = Self::SerializeStruct;
@@ -217,7 +222,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
-        self.serialize_seq(Some(len))
+        Ok(TupleSerializer::new(self, len))
     }
 
     fn serialize_tuple_struct(
@@ -374,6 +379,41 @@ impl<'a> ser::SerializeMap for StructSerializer<'a> {
     }
 }
 
+struct TupleSerializer<'a> {
+    serializer: &'a mut Serializer,
+    nvlist: NvList,
+    idx: usize,
+}
+
+impl<'a> TupleSerializer<'a> {
+    fn new(serializer: &'a mut Serializer, _len: usize) -> Self {
+        TupleSerializer {
+            serializer,
+            nvlist: NvList::new_unique_names(),
+            idx: 0,
+        }
+    }
+}
+
+impl<'a> ser::SerializeTuple for TupleSerializer<'a> {
+    type Ok = NvDataOwned;
+    type Error = Error;
+
+    fn serialize_element<T>(&mut self, value: &T) -> Result<()>
+    where
+        T: ?Sized + Serialize,
+    {
+        let data = value.serialize(&mut *self.serializer)?;
+        data.insert_into(format!("#{}", self.idx), self.nvlist.as_mut())?;
+        self.idx += 1;
+        Ok(())
+    }
+
+    fn end(self) -> Result<Self::Ok> {
+        Ok(NvDataOwned::NvList(self.nvlist))
+    }
+}
+
 #[derive(Debug)]
 struct SeqSerializer<'a> {
     serializer: &'a mut Serializer,
@@ -435,10 +475,12 @@ impl<'a> ser::SerializeSeq for SeqSerializer<'a> {
     }
 
     fn end(self) -> Result<Self::Ok> {
+        /*
+         * If we have an empty sequence, we can't correctly determine the type of array
+         * to add it as. For simplicity, we simply omit it from the nvlist.
+         */
         if self.vec.is_empty() {
-            return Err(Error::Message(
-                "zero-length (untyped) sequences not supported".to_string(),
-            ));
+            return Ok(NvDataOwned::None);
         }
         match self.vec[0] {
             NvDataOwned::Unknown => Err(Error::Message(
@@ -468,16 +510,56 @@ impl<'a> ser::SerializeSeq for SeqSerializer<'a> {
                 todo!()
             }
             NvDataOwned::Uint8(_) => {
-                todo!()
+                let mut vec = Vec::with_capacity(self.vec.len());
+                let len = self.vec.len();
+                let mut iter = self.vec.into_iter();
+                while let Some(NvDataOwned::Uint8(v)) = iter.next() {
+                    vec.push(v);
+                }
+                if vec.len() == len {
+                    Ok(NvDataOwned::Uint8Array(vec))
+                } else {
+                    Err(Error::Message(
+                        "hetrogenious sequences not supported".to_string(),
+                    ))
+                }
             }
             NvDataOwned::Int16(_) => {
                 todo!()
             }
-            NvDataOwned::Uint16(_) => todo!(),
+            NvDataOwned::Uint16(_) => {
+                let mut vec = Vec::with_capacity(self.vec.len());
+                let len = self.vec.len();
+                let mut iter = self.vec.into_iter();
+                while let Some(NvDataOwned::Uint16(v)) = iter.next() {
+                    vec.push(v);
+                }
+                if vec.len() == len {
+                    Ok(NvDataOwned::Uint16Array(vec))
+                } else {
+                    Err(Error::Message(
+                        "hetrogenious sequences not supported".to_string(),
+                    ))
+                }
+            }
             NvDataOwned::Int32(_) => todo!(),
             NvDataOwned::Uint32(_) => todo!(),
             NvDataOwned::Int64(_) => todo!(),
-            NvDataOwned::Uint64(_) => todo!(),
+            NvDataOwned::Uint64(_) => {
+                let mut vec = Vec::with_capacity(self.vec.len());
+                let len = self.vec.len();
+                let mut iter = self.vec.into_iter();
+                while let Some(NvDataOwned::Uint64(v)) = iter.next() {
+                    vec.push(v);
+                }
+                if vec.len() == len {
+                    Ok(NvDataOwned::Uint64Array(vec))
+                } else {
+                    Err(Error::Message(
+                        "hetrogenious sequences not supported".to_string(),
+                    ))
+                }
+            }
             NvDataOwned::String(_) => todo!(),
             NvDataOwned::NvList(_) => {
                 let mut vec = Vec::with_capacity(self.vec.len());
