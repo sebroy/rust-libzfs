@@ -15,4 +15,4 @@ build-env = "0.3"
 
 [dependencies]
 libc = "0.2"
-nvpair-sys = { path = "../nvpair-sys", version = "0.4" }
+nvpair-sys = { path = "../nvpair-sys", version = "0.4.1-delphix0" }

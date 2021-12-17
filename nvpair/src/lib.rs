@@ -3,6 +3,7 @@
 use cstr_argument::CStrArgument;
 use foreign_types::{foreign_type, ForeignType, ForeignTypeRef, Opaque};
 use nvpair_sys as sys;
+use std::convert::TryInto;
 use std::mem::MaybeUninit;
 use std::os::raw::c_int;
 use std::{ffi, fmt, io, ptr};
@@ -172,7 +173,7 @@ impl NvEncode for [i8] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut i8,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -191,7 +192,7 @@ impl NvEncode for [u8] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut u8,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -210,7 +211,7 @@ impl NvEncode for [i16] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut i16,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -229,7 +230,7 @@ impl NvEncode for [u16] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut u16,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -248,7 +249,7 @@ impl NvEncode for [i32] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut i32,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -267,7 +268,7 @@ impl NvEncode for [u32] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut u32,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -286,7 +287,7 @@ impl NvEncode for [i64] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut i64,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -305,7 +306,7 @@ impl NvEncode for [u64] {
                 nv.as_mut_ptr(),
                 name.as_ref().as_ptr(),
                 self.as_ptr() as *mut u64,
-                self.len() as u32,
+                self.len().try_into().unwrap(),
             )
         };
         if v != 0 {
@@ -369,6 +370,61 @@ impl NvEncode for () {
 impl NvEncode for str {
     fn insert_into<S: CStrArgument>(&self, name: S, nv: &mut NvListRef) -> io::Result<()> {
         ffi::CString::new(self).unwrap().insert_into(name, nv)
+    }
+}
+
+impl NvEncode for [&ffi::CStr] {
+    fn insert_into<S: CStrArgument>(&self, name: S, nv: &mut NvListRef) -> io::Result<()> {
+        let name = name.into_cstr();
+        let v = unsafe {
+            sys::nvlist_add_string_array(
+                nv.as_mut_ptr(),
+                name.as_ref().as_ptr(),
+                self.iter().map(|x| x.as_ptr()).collect::<Vec<*const i8>>()[..].as_ptr(),
+                self.len().try_into().unwrap(),
+            )
+        };
+        if v != 0 {
+            Err(io::Error::from_raw_os_error(v))
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl NvEncode for [&str] {
+    fn insert_into<S: CStrArgument>(&self, name: S, nv: &mut NvListRef) -> io::Result<()> {
+        let cstrings = self
+            .iter()
+            .map(|x| std::ffi::CString::new(*x).unwrap())
+            .collect::<Vec<ffi::CString>>();
+        (&cstrings
+            .iter()
+            .map(|x| x.as_c_str())
+            .collect::<Vec<&ffi::CStr>>()[..])
+            .insert_into(name, nv)
+    }
+}
+
+impl NvEncode for [&NvListRef] {
+    fn insert_into<S: CStrArgument>(&self, name: S, nv: &mut NvListRef) -> io::Result<()> {
+        let name = name.into_cstr();
+        let v = unsafe {
+            sys::nvlist_add_nvlist_array(
+                nv.as_mut_ptr(),
+                name.as_ref().as_ptr(),
+                self.iter()
+                    .map(|x| x.as_ptr())
+                    .collect::<Vec<*const nvpair_sys::nvlist>>()[..]
+                    .as_ptr(),
+                self.len().try_into().unwrap(),
+            )
+        };
+        if v != 0 {
+            Err(io::Error::from_raw_os_error(v))
+        } else {
+            Ok(())
+        }
     }
 }
 

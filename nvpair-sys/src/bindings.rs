@@ -492,7 +492,7 @@ extern "C" {
     pub fn nvlist_add_boolean_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut boolean_t::Type,
+        arg3: *const boolean_t::Type,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -500,7 +500,7 @@ extern "C" {
     pub fn nvlist_add_byte_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut uchar_t,
+        arg3: *const uchar_t,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -508,7 +508,7 @@ extern "C" {
     pub fn nvlist_add_int8_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut i8,
+        arg3: *const i8,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -516,7 +516,7 @@ extern "C" {
     pub fn nvlist_add_uint8_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut u8,
+        arg3: *const u8,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -524,7 +524,7 @@ extern "C" {
     pub fn nvlist_add_int16_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut i16,
+        arg3: *const i16,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -532,7 +532,7 @@ extern "C" {
     pub fn nvlist_add_uint16_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut u16,
+        arg3: *const u16,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -540,7 +540,7 @@ extern "C" {
     pub fn nvlist_add_int32_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut i32,
+        arg3: *const i32,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -548,7 +548,7 @@ extern "C" {
     pub fn nvlist_add_uint32_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut u32,
+        arg3: *const u32,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -556,7 +556,7 @@ extern "C" {
     pub fn nvlist_add_int64_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut i64,
+        arg3: *const i64,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -564,7 +564,7 @@ extern "C" {
     pub fn nvlist_add_uint64_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut u64,
+        arg3: *const u64,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -572,7 +572,7 @@ extern "C" {
     pub fn nvlist_add_string_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *const *mut ::std::os::raw::c_char,
+        arg3: *const *const ::std::os::raw::c_char,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
@@ -580,7 +580,7 @@ extern "C" {
     pub fn nvlist_add_nvlist_array(
         arg1: *mut nvlist_t,
         arg2: *const ::std::os::raw::c_char,
-        arg3: *mut *mut nvlist_t,
+        arg3: *const *const nvlist_t,
         arg4: uint_t,
     ) -> ::std::os::raw::c_int;
 }
