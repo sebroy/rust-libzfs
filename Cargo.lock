@@ -88,16 +88,17 @@ checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
 
 [[package]]
 name = "nvpair"
-version = "0.5.0"
+version = "0.5.1-delphix0"
 dependencies = [
  "cstr-argument",
  "foreign-types",
  "nvpair-sys",
+ "serde",
 ]
 
 [[package]]
 name = "nvpair-sys"
-version = "0.4.0"
+version = "0.4.1-delphix0"
 
 [[package]]
 name = "os_pipe"
@@ -196,6 +197,12 @@ checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
 dependencies = [
  "winapi",
 ]
+
+[[package]]
+name = "serde"
+version = "1.0.126"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec7505abeacaec74ae4778d9d9328fe5a5d04253220a85c4ee022239fc996d03"
 
 [[package]]
 name = "snafu"
