@@ -1,5 +1,7 @@
 # rust-libzfs
 
+test
+
 Rust APIs for zfs related interfaces. Currently: `libzfs_core` and `nvpair`.
 
 [![zfs-core crates.io](https://img.shields.io/badge/dynamic/json.svg?label=crates.io&url=https%3A%2F%2Fcrates.io%2Fapi%2Fv1%2Fcrates%2Fzfs-core%2Fversions&query=%24.versions.0.num&colorB=orange&prefix=zfs-core%20%3D%20%22&suffix=%22&style=flat)](https://crates.io/crates/zfs-core)
